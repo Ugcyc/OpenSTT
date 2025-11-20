@@ -1,0 +1,14 @@
+# Virtual environments
+.venv/
+venv/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Model caches and temp
+*.log
+*.tmp
+.cache/
