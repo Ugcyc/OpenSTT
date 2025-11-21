@@ -8,6 +8,7 @@ Local, Windows-only speech-to-text dictation similar to Wispr Flow. Hold or togg
 - Lightweight spoken punctuation rules and sentence capitalization.
 - Output to active window typing or clipboard (optionally auto-paste).
 - Minimal Tk overlay with status + quick settings editor.
+- Cross-platform hotkeys/typing via `pynput` on macOS/Linux; Windows keeps the keyboard backend.
 
 ## Installation
 1. Install Python 3.11+ on Windows.
@@ -70,3 +71,4 @@ It records ~4 seconds, runs transcription + punctuation cleanup, and prints the 
 - GPU is used when available (CUDA build); falls back to CPU automatically.
 - `ctrl+alt+r` replays the last recorded audio for debugging.
 - TODO: Add streaming partial results and a system tray icon; add richer spoken punctuation rules.
+- macOS/Linux: hotkeys and typing use `pynput`. On macOS you must grant microphone + accessibility/input-monitoring permissions; on Wayland some environments may block global hotkeys—use clipboard mode if typing is restricted.

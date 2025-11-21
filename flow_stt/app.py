@@ -9,7 +9,7 @@ from .audio_capture import AudioCapture
 from .config import ConfigManager
 from .postprocess import TextPostProcessor
 from .stt_engine import SpeechToTextEngine
-from .windows_integration import WindowsIntegration
+from .integration import get_integration
 from .ui import StatusUI
 
 
@@ -35,7 +35,7 @@ class DictationApp:
             language=self.cfg.language,
             prefer_gpu=self.cfg.prefer_gpu,
         )
-        self.windows = WindowsIntegration(self.cfg.output_mode, self.cfg.auto_paste_clipboard)
+        self.integration = get_integration(self.cfg.output_mode, self.cfg.auto_paste_clipboard)
         self.audio = AudioCapture(
             device=self.cfg.mic_device,
             sample_rate=16000,
@@ -52,20 +52,28 @@ class DictationApp:
             logger.info("Status: %s", status)
 
     def _register_hotkeys(self):
-        self.windows.clear_hotkeys()
+        # Clear both to be safe when switching platforms/configs.
+        try:
+            self.integration.clear_hotkeys()
+        except AttributeError:
+            pass
         if self.cfg.mode == "toggle":
-            self.windows.register_hotkey_toggle(self.cfg.hotkey, self._toggle_listening)
+            self.integration.register_hotkey_toggle(self.cfg.hotkey, self._toggle_listening)
         else:
-            self.windows.register_hotkey_push_to_talk(self.cfg.hotkey, self.start_listening, self.stop_listening)
+            self.integration.register_hotkey_push_to_talk(self.cfg.hotkey, self.start_listening, self.stop_listening)
         if self.cfg.replay_hotkey:
-            self.windows.register_hotkey_action(self.cfg.replay_hotkey, self.replay_last_recording)
+            # Only WindowsIntegration supports register_hotkey_action; map to toggle for other platforms.
+            try:
+                self.integration.register_hotkey_action(self.cfg.replay_hotkey, self.replay_last_recording)  # type: ignore[attr-defined]
+            except AttributeError:
+                self.integration.register_hotkey_toggle(self.cfg.replay_hotkey, self.replay_last_recording)
 
     def _reload_config(self):
         logger.info("Reloading config from disk.")
         self.cfg = self.cfg_manager.load()
         self.postprocessor.enable_spoken_punctuation = self.cfg.spoken_punctuation
-        self.windows.output_mode = self.cfg.output_mode
-        self.windows.auto_paste_clipboard = self.cfg.auto_paste_clipboard
+        self.integration.output_mode = self.cfg.output_mode
+        self.integration.auto_paste_clipboard = self.cfg.auto_paste_clipboard
         self.audio.device = self.cfg.mic_device
         self.audio.silence_timeout = self.cfg.silence_timeout_secs
         if (
@@ -113,10 +121,13 @@ class DictationApp:
 
     def _transcribe_and_output(self, audio):
         self._set_status("Transcribing...")
+        started = time.perf_counter()
         try:
             result = self.stt_engine.transcribe(audio, sample_rate=self.audio.sample_rate)
             processed = self.postprocessor.process(result.final_text)
-            self.windows.output_text(processed.final_text)
+            self.integration.output_text(processed.final_text)
+            elapsed = time.perf_counter() - started
+            logger.info("Transcription took %.2fs", elapsed)
             if self.cfg.log_transcripts:
                 logger.info("Transcript: %s", processed.final_text)
         except Exception as exc:  # noqa: BLE001
