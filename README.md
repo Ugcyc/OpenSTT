@@ -1,12 +1,12 @@
 # Flow STT (local Windows dictation)
 
-Local, Windows-only speech-to-text dictation similar to Wispr Flow. Hold or toggle a global hotkey, speak, and the text is typed into the focused application (or copied to clipboard).
+Local, Windows-only speech-to-text dictation similar to Wispr Flow. Hold or toggle a global hotkey, speak, and the text is typed into the focused application, copied to clipboard, or pasted in one go.
 
 ## Features
 - Local Whisper inference via `faster-whisper` (no cloud calls).
 - Global hotkey (default `Ctrl+Shift+Space`) with push-to-talk or toggle mode.
 - Lightweight spoken punctuation rules and sentence capitalization.
-- Output to active window typing or clipboard (optionally auto-paste).
+- Output to active window typing, clipboard, or paste-in-one-go.
 - Minimal Tk overlay with status + quick settings editor.
 - Cross-platform hotkeys/typing via `pynput` on macOS/Linux; Windows keeps the keyboard backend.
 
@@ -48,6 +48,7 @@ Config is stored at `%USERPROFILE%\AppData\Local\flow_stt\config.json`. Default 
 }
 ```
 You can edit this file directly or use the Settings button in the overlay window to change hotkey, mode, output, mic device, model size, etc. After saving, hotkeys reload automatically.
+`output_mode` options: `type` (simulate typing), `clipboard` (copy only, optionally auto-paste), `paste` (copy + paste immediately in one action).
 
 ## Spoken punctuation rules
 Deterministic replacements:

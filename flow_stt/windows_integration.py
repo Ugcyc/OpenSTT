@@ -24,16 +24,20 @@ class WindowsIntegration:
             keyboard.write(chunk, delay=0.01)
             time.sleep(0.02)
 
-    def copy_to_clipboard(self, text: str) -> None:
+    def copy_to_clipboard(self, text: str, paste: bool | None = None) -> None:
         if not text:
             return
         pyperclip.copy(text)
-        if self.auto_paste_clipboard:
+        do_paste = self.auto_paste_clipboard if paste is None else paste
+        if do_paste:
+            time.sleep(0.05)  # Give the clipboard a moment to update before pasting.
             keyboard.send("ctrl+v")
 
     def output_text(self, text: str) -> None:
         if self.output_mode == "clipboard":
             self.copy_to_clipboard(text)
+        elif self.output_mode == "paste":
+            self.copy_to_clipboard(text, paste=True)
         else:
             self.type_text(text)
 

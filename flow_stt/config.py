@@ -7,7 +7,7 @@ from typing import Optional
 DEFAULT_CONFIG = {
     "hotkey": "ctrl+shift+space",
     "mode": "push_to_talk",  # or "toggle"
-    "output_mode": "type",  # or "clipboard"
+    "output_mode": "type",  # or "clipboard" or "paste"
     "mic_device": None,
     "model_size": "small",
     "language": "en",
